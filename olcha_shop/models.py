@@ -51,6 +51,18 @@ class Product(models.Model):
         return self.name
 
 
+class Attribute(models.Model):
+    key = models.ForeignKey(Key, on_delete=models.CASCADE)
+    value = models.ForeignKey(Value, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = 'Attributes'
+
+    def __str__(self):
+        return self.product.name
+
+
 class Image(models.Model):
     image_name = models.CharField(max_length=100)
     image = models.ImageField(upload_to='images/')
@@ -67,6 +79,7 @@ class Comment(models.Model):
     content = models.TextField()
     file = models.FileField(upload_to='comment_files/')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
