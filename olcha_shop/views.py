@@ -7,7 +7,7 @@ from rest_framework import generics
 
 from olcha_shop.models import Category, Group, Product, Comment, Image, Attribute
 from olcha_shop.serializers import CategorySerializer, ProductSerializer, CommentSerializer, ImageSerializer, \
-    AttributeSerializer
+    AttributeSerializer, GroupSerializer
 
 
 # Create your views here.
@@ -86,11 +86,29 @@ class GroupListView(APIView):
         return Response(group_data, status=status.HTTP_200_OK)
 
 
+class GroupListAPIView(generics.ListAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = permissions.IsAuthenticated
+
+
 class ProductListView(APIView):
     def get(self, request):
         products = Product.objects.all()
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProductListAPIView(generics.ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = permissions.IsAuthenticated
+
+
+class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class CommentListView(APIView):

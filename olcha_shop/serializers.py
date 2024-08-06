@@ -2,7 +2,7 @@ import imghdr
 
 from rest_framework import serializers
 
-from olcha_shop.models import Category, Product, Comment, Image, Attribute
+from olcha_shop.models import Category, Product, Comment, Image, Attribute, Group
 
 from rest_framework import serializers
 from django.core.files.base import ContentFile
@@ -70,6 +70,12 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'name', 'slug', 'description', 'price', 'group', 'discount']
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = '__all__'
 
 
 class CommentSerializer(serializers.ModelSerializer):
