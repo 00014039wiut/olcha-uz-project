@@ -46,6 +46,7 @@ class Product(models.Model):
     price = models.FloatField()
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     discount = models.IntegerField(default=0)
+    is_liked = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -66,7 +67,7 @@ class Attribute(models.Model):
 class Image(models.Model):
     image_name = models.CharField(max_length=100)
     image = models.ImageField(upload_to='images/')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE , related_name='products')
     is_primary = models.BooleanField(default=False)
 
     def __str__(self):

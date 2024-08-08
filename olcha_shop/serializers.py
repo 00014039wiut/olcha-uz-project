@@ -57,22 +57,52 @@ class Base64ImageField(serializers.ImageField):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    image = Base64ImageField(
-        max_length=None, use_url=True,
-    )
+    image = serializers.SerializerMethodField('get_image_url')
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        return request.build_absolute_uri(obj.image.url)
 
     class Meta:
         model = Category
         fields = '__all__'
 
 
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Image
+        fields = '__all__'
+
+
 class ProductSerializer(serializers.ModelSerializer):
+    discounted_price = serializers.SerializerMethodField('get_discounted_price')
+    primary_image = serializers.SerializerMethodField('get_primary_image')
+
+    def get_discounted_price(self, obj):
+        return obj.price - obj.price * obj.discount/100
+
+
     class Meta:
         model = Product
-        fields = ['id', 'name', 'slug', 'description', 'price', 'group', 'discount']
+        fields = '__all__'
 
+    def get_primary_image(self, obj):
+
+        primary_image = obj.products.filter(is_primary=True).first()
+        if primary_image:
+            return ImageSerializer(primary_image).data
+        return None
 
 class GroupSerializer(serializers.ModelSerializer):
+    category_title = serializers.SerializerMethodField('get_category_title')
+    category_slug = serializers.SerializerMethodField('get_category_slug')
+
+    def get_category_title(self, obj):
+        return obj.category.title
+
+    def get_category_slug(self, obj):
+        return obj.category.slug
+
     class Meta:
         model = Group
         fields = '__all__'
@@ -84,10 +114,7 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'rating', 'content', 'date', 'file', 'product']
 
 
-class ImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Image
-        fields = ['id', 'image_name', 'image', 'product', 'is_primary']
+
 
 
 class AttributeSerializer(serializers.ModelSerializer):

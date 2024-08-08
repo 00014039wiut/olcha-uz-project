@@ -12,10 +12,10 @@ from olcha_shop.serializers import CategorySerializer, ProductSerializer, Commen
 
 # Create your views here.
 
-class CategoryListAPIView(generics.ListCreateAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticated]
+# class CategoryListAPIView(generics.ListCreateAPIView):
+#     queryset = Category.objects.all()
+#     serializer_class = CategorySerializer
+#     permission_classes = [permissions.IsAuthenticated]
 
 
 class CategoryDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -27,32 +27,32 @@ class CategoryDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 class CategoryListView(APIView):
     def get(self, request):
         categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
+        serializer = CategorySerializer(categories, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view()
-def category_list(request):
-    categories = Category.objects.all()
-    serializer = CategorySerializer(categories, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-@api_view()
-def category_detail(request, pk):
-    category = Category.objects.get(pk=pk)
-    serializer = CategorySerializer(category, many=False)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def category_create(request):
-    serializer = CategorySerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
+# @api_view()
+# def category_list(request):
+#     categories = Category.objects.all()
+#     serializer = CategorySerializer(categories, many=True)
+#     return Response(serializer.data, status=status.HTTP_200_OK)
+#
+#
+# @api_view()
+# def category_detail(request, pk):
+#     category = Category.objects.get(pk=pk)
+#     serializer = CategorySerializer(category, many=False)
+#     return Response(serializer.data, status=status.HTTP_200_OK)
+#
+#
+# @api_view(['POST'])
+# def category_create(request):
+#     serializer = CategorySerializer(data=request.data)
+#     if serializer.is_valid():
+#         serializer.save()
+#     return Response(serializer.data, status=status.HTTP_201_CREATED)
+#
+#
 class CategoryCreateView(APIView):
     def post(self, request):
         serializer = CategorySerializer(data=request.data)
@@ -62,34 +62,31 @@ class CategoryCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CategoriesListView(APIView):
-    def get(self, request):
-        categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+#
+#
+# class CategoriesListView(APIView):
+#     def get(self, request):
+#         categories = Category.objects.all()
+#         serializer = CategorySerializer(categories, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class GroupListView(APIView):
     def get(self, request):
-        group_data = [
-            {
-                'ID': group.id,
-                'name': group.name,
-                'slug': group.slug,
-                'category_id': group.category.id,
-                'category_title': group.category.title,
-                'image': group.image.url
-
-            }
-            for group in Group.objects.all()
-        ]
-        return Response(group_data, status=status.HTTP_200_OK)
+        groups = Group.objects.all()
+        serializer = GroupSerializer(groups, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class GroupListAPIView(generics.ListAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = permissions.IsAuthenticated
+
+
+class GroupDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    lookup_field = 'slug'
 
 
 class ProductListView(APIView):
@@ -102,13 +99,17 @@ class ProductListView(APIView):
 class ProductListAPIView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = permissions.IsAuthenticated
+
+    def get_queryset(self):
+        category_slug = self.kwargs['category_slug']
+        group_slug = self.kwargs['group_slug']
+        queryset = Product.objects.filter(group__category__slug=category_slug, group__slug=group_slug)
+        return queryset
 
 
 class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
 
 class CommentListView(APIView):
