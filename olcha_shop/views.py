@@ -110,6 +110,7 @@ class ProductListAPIView(generics.ListAPIView):
 class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    lookup_field = 'slug'
 
 
 class CommentListView(APIView):
@@ -126,8 +127,12 @@ class ImageListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class AttributeListView(APIView):
-    def get(self, request):
-        attributes = Attribute.objects.all()
-        serializer = AttributeSerializer(attributes, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class AttributeListView(generics.ListCreateAPIView):
+    queryset = Attribute.objects.all()
+    serializer_class = AttributeSerializer
+
+class AttributeDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Attribute.objects.all()
+    serializer_class = AttributeSerializer
+    lookup_field = 'pk'
+

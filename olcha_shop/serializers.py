@@ -2,7 +2,7 @@ import imghdr
 
 from rest_framework import serializers
 
-from olcha_shop.models import Category, Product, Comment, Image, Attribute, Group
+from olcha_shop.models import Category, Product, Comment, Image, Attribute, Group, Key, Value
 
 from rest_framework import serializers
 from django.core.files.base import ContentFile
@@ -77,21 +77,34 @@ class ImageSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     discounted_price = serializers.SerializerMethodField('get_discounted_price')
     primary_image = serializers.SerializerMethodField('get_primary_image')
+    images = ImageSerializer(many=True, read_only=True, source='products')
+
+    attributes = serializers.SerializerMethodField('get_attributes')
+
+    def get_attributes(self, obj):
+        attributes = obj.attributes.all().values('key__key_name', 'value__value_name')
+        attr_dict = {}
+        for attribute in attributes:
+            key = attribute['key__key_name']
+            value = attribute['value__value_name']
+            attr_dict[key] = value
+
+        print(attributes)
+        return attr_dict
 
     def get_discounted_price(self, obj):
-        return obj.price - obj.price * obj.discount/100
-
+        return obj.price - obj.price * obj.discount / 100
 
     class Meta:
         model = Product
         fields = '__all__'
 
     def get_primary_image(self, obj):
-
         primary_image = obj.products.filter(is_primary=True).first()
         if primary_image:
             return ImageSerializer(primary_image).data
         return None
+
 
 class GroupSerializer(serializers.ModelSerializer):
     category_title = serializers.SerializerMethodField('get_category_title')
@@ -114,10 +127,28 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'rating', 'content', 'date', 'file', 'product']
 
 
+class KeySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Key
+        exclude = ('id',)
 
+
+class ValueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Value
+        exclude = ('id', )
 
 
 class AttributeSerializer(serializers.ModelSerializer):
+    key = serializers.SerializerMethodField('get_key')
+    value = serializers.SerializerMethodField('get_value')
+    product = serializers.SerializerMethodField('get_product')
+    def get_key(self, obj):
+        return obj.key.key_name
+    def get_value(self, obj):
+        return obj.value.value_name
+    def get_product(self, obj):
+        return obj.product.name
     class Meta:
         model = Attribute
         fields = ['id', 'key', 'value', 'product']

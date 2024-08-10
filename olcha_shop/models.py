@@ -44,7 +44,7 @@ class Product(models.Model):
     slug = models.SlugField(unique=True)
     description = models.TextField()
     price = models.FloatField()
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='groups')
     discount = models.IntegerField(default=0)
     is_liked = models.BooleanField(default=False)
 
@@ -53,9 +53,9 @@ class Product(models.Model):
 
 
 class Attribute(models.Model):
-    key = models.ForeignKey(Key, on_delete=models.CASCADE)
-    value = models.ForeignKey(Value, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    key = models.ForeignKey(Key, on_delete=models.CASCADE, related_name='keys')
+    value = models.ForeignKey(Value, on_delete=models.CASCADE, related_name='values')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='products')
 
     class Meta:
         verbose_name_plural = 'Attributes'
@@ -67,7 +67,7 @@ class Attribute(models.Model):
 class Image(models.Model):
     image_name = models.CharField(max_length=100)
     image = models.ImageField(upload_to='images/')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE , related_name='products')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='attributes')
     is_primary = models.BooleanField(default=False)
 
     def __str__(self):
