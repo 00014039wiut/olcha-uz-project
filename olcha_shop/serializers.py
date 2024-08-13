@@ -1,6 +1,9 @@
 import imghdr
 
 from rest_framework import serializers
+from rest_framework.authtoken.admin import User
+from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import ValidationError
 
 from olcha_shop.models import Category, Product, Comment, Image, Attribute, Group, Key, Value
 
@@ -83,14 +86,11 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_attributes(self, obj):
         attributes = obj.attributes.all().values('key__key_name', 'value__value_name')
-        attr_dict = {}
+        product_attributes = {}
         for attribute in attributes:
-            key = attribute['key__key_name']
-            value = attribute['value__value_name']
-            attr_dict[key] = value
+            product_attributes[attribute['key__key_name']] = attribute['value__value_name']
 
-        print(attributes)
-        return attr_dict
+        return product_attributes
 
     def get_discounted_price(self, obj):
         return obj.price - obj.price * obj.discount / 100
@@ -100,7 +100,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_primary_image(self, obj):
-        primary_image = obj.products.filter(is_primary=True).first()
+        primary_image = obj.images.filter(is_primary=True).first()
         if primary_image:
             return ImageSerializer(primary_image).data
         return None
@@ -136,19 +136,72 @@ class KeySerializer(serializers.ModelSerializer):
 class ValueSerializer(serializers.ModelSerializer):
     class Meta:
         model = Value
-        exclude = ('id', )
+        exclude = ('id',)
 
 
 class AttributeSerializer(serializers.ModelSerializer):
-    key = serializers.SerializerMethodField('get_key')
-    value = serializers.SerializerMethodField('get_value')
-    product = serializers.SerializerMethodField('get_product')
+    key = serializers.CharField(source='key.key_name')
+    value = serializers.CharField(source='value.value_name')
+    product = serializers.CharField(source='product.name')
+
     def get_key(self, obj):
-        return obj.key.key_name
+        return obj.keys.all().values('key__key_name')
+
     def get_value(self, obj):
-        return obj.value.value_name
+        return obj.values.all()
+
     def get_product(self, obj):
         return obj.product.name
+
     class Meta:
         model = Attribute
-        fields = ['id', 'key', 'value', 'product']
+        fields = '__all__'
+
+
+class LoginUserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+
+class UserRegisterSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(read_only=True)
+    username = serializers.CharField()
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(write_only=True)
+    password2 = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name",
+                  "last_name", "email", "password", "password2"]
+        extra_kwargs = {
+            'password': {"write_only": True}
+        }
+
+    def validate_username(self, username):
+        if User.objects.filter(username=username).exists():
+            detail = {
+                "detail": f"{username} Already exists!"
+            }
+            raise ValidationError(detail=detail)
+        return username
+
+    def validate(self, instance):
+        if instance['password'] != instance['password2']:
+            raise ValidationError({"message": "Both password must match"})
+
+        if User.objects.filter(email=instance['email']).exists():
+            raise ValidationError({"message": "Email already taken!"})
+
+        return instance
+
+    def create(self, validated_data):
+        passowrd = validated_data.pop('password')
+        passowrd2 = validated_data.pop('password2')
+        user = User.objects.create(**validated_data)
+        user.set_password(passowrd)
+        user.save()
+
+        return user

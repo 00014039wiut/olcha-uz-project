@@ -20,11 +20,12 @@ from django.contrib.messages import api
 from django.urls import path, include
 
 from root import settings
-
+from root.custom_token import CustomAuthToken
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('olcha-uz/', include('olcha_shop.urls')),
+    path('auth-token/', CustomAuthToken.as_view(), name='auth-token' )
 
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -3,7 +3,8 @@ from django.urls import path, include
 
 from olcha_shop.views import CategoryListView, GroupListView, ProductListView, CommentListView, \
     ImageListView, AttributeListView, CategoryDetailAPIView, ProductListAPIView, CategoryDetailAPIView, \
-    ProductListAPIView, CategoryCreateView, GroupDetailAPIView, ProductDetailAPIView, AttributeDetailAPIView
+    ProductListAPIView, CategoryCreateView, GroupDetailAPIView, ProductDetailAPIView, AttributeDetailAPIView, \
+    UserLoginAPIView, UserRegisterAPIView
 
 urlpatterns = [
     path('categories/', CategoryListView.as_view(), name='category_list'),
@@ -17,4 +18,6 @@ urlpatterns = [
     path('images/', ImageListView.as_view(), name='image_list'),
     path('attributes/', AttributeListView.as_view(), name='attribute_list'),
     path('attribute/<int:pk>/', AttributeDetailAPIView.as_view(), name='attribute-detail'),
+    path('login-page/', UserLoginAPIView.as_view(), name='login-page'),
+    path('register-page/', UserRegisterAPIView.as_view(), name='register-page'),
 ]
