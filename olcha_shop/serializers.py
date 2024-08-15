@@ -162,6 +162,10 @@ class LoginUserSerializer(serializers.ModelSerializer):
     username = serializers.CharField()
     password = serializers.CharField()
 
+    class Meta:
+        model = User
+        fields = '__all__'
+
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -202,6 +206,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         passowrd2 = validated_data.pop('password2')
         user = User.objects.create(**validated_data)
         user.set_password(passowrd)
+        user.is_staff = True
+        user.is_active = True
+
         user.save()
 
         return user

@@ -5,9 +5,13 @@ from rest_framework.decorators import api_view
 from django.shortcuts import render
 from rest_framework import status, permissions
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import generics
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 
 from olcha_shop.models import Category, Group, Product, Comment, Image, Attribute
 from olcha_shop.serializers import CategorySerializer, ProductSerializer, CommentSerializer, ImageSerializer, \
@@ -25,7 +29,7 @@ from olcha_shop.serializers import CategorySerializer, ProductSerializer, Commen
 class CategoryDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticated]
+
 
 
 class CategoryListView(APIView):
@@ -103,7 +107,7 @@ class ProductListView(APIView):
 class ProductListAPIView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
 
     def get_queryset(self):
         category_slug = self.kwargs['category_slug']
@@ -159,7 +163,7 @@ class UserLoginAPIView(APIView):
                     'success': True,
                     'username': user.username,
                     'email': user.email,
-                    'token': token.key
+
                 }
                 return Response(response, status=status.HTTP_200_OK)
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
@@ -179,3 +183,12 @@ class UserRegisterAPIView(APIView):
             return Response(response, status=status.HTTP_200_OK)
         raise ValidationError(
             serializer.errors, code=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+class UserLogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args):
+        token = Token.objects.get(user=request.user)
+        token.delete()
+        return Response({"success": True, "detail": "Logged out!"}, status=status.HTTP_200_OK)
