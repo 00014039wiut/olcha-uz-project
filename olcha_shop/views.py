@@ -12,7 +12,6 @@ from rest_framework import generics
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-
 from olcha_shop.models import Category, Group, Product, Comment, Image, Attribute
 from olcha_shop.serializers import CategorySerializer, ProductSerializer, CommentSerializer, ImageSerializer, \
     AttributeSerializer, GroupSerializer, LoginUserSerializer, UserRegisterSerializer
@@ -29,7 +28,6 @@ from olcha_shop.serializers import CategorySerializer, ProductSerializer, Commen
 class CategoryDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-
 
 
 class CategoryListView(APIView):
@@ -104,10 +102,14 @@ class ProductListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+from olcha_shop import admin_permissions
+
+
 class ProductListAPIView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     authentication_classes = [JWTAuthentication]
+    permission_classes = admin_permissions.CustomPermission
 
     def get_queryset(self):
         category_slug = self.kwargs['category_slug']

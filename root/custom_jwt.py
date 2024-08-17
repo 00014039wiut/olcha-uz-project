@@ -49,7 +49,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         )
         user.is_staff = True
-        user.is_active =  True
+        user.is_active = True
         return user
 
 
