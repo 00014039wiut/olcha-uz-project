@@ -125,13 +125,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
+#
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication'
 
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-
-    ]
+   ],
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny', 'rest_framework.permissions.IsAuthenticated', 'rest_framework.permissions.IsAdminUser'],
 }
 
 from datetime import timedelta

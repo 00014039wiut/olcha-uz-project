@@ -3,7 +3,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 from django.shortcuts import render
-from rest_framework import status, permissions
+from rest_framework import status, permissions, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -105,17 +105,23 @@ class ProductListView(APIView):
 from olcha_shop import admin_permissions
 
 
-class ProductListAPIView(generics.ListAPIView):
+class ProductListAPIView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    authentication_classes = [JWTAuthentication]
-    permission_classes = admin_permissions.CustomPermission
+
+    permission_classes = [admin_permissions.CustomPermission]
 
     def get_queryset(self):
         category_slug = self.kwargs['category_slug']
         group_slug = self.kwargs['group_slug']
         queryset = Product.objects.filter(group__category__slug=category_slug, group__slug=group_slug)
         return queryset
+
+
+class ProductListViewSet(viewsets.ModelViewSet):
+    serializer_class = ProductSerializer
+    permission_classes = [admin_permissions.CustomPermission]
+    queryset = Product.objects.all()
 
 
 class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
