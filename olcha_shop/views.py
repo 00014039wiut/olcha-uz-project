@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.db.models import Prefetch
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
@@ -88,6 +89,10 @@ class GroupListAPIView(generics.ListAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
+    def get_queryset(self):
+        queryset = Group.objects.all().select_related('category')
+        return queryset
+
 
 class GroupDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
@@ -115,6 +120,23 @@ class ProductListAPIView(generics.ListCreateAPIView):
         category_slug = self.kwargs['category_slug']
         group_slug = self.kwargs['group_slug']
         queryset = Product.objects.filter(group__category__slug=category_slug, group__slug=group_slug)
+        return queryset
+
+
+class ProductListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        # Using select_related for the 'group' ForeignKey relationship
+        queryset = Product.objects.select_related('group') \
+            .prefetch_related(
+            Prefetch('group__category', queryset=Category.objects.all()),
+            Prefetch('images', queryset=Image.objects.all()),
+            Prefetch('attributes', queryset=Attribute.objects.all()),
+
+        )
         return queryset
 
 

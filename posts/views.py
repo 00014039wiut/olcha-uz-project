@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.views.generic import ListView
+from rest_framework import permissions
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 
@@ -11,4 +12,5 @@ from posts.serializers import PostSerializer
 class PostListView(ListCreateAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
+

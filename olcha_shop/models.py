@@ -1,11 +1,12 @@
 from django.db import models
+from django.utils.text import slugify
 
 
 # Create your models here.
 
 class Category(models.Model):
     title = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True, blank=True)
     image = models.ImageField(upload_to='images/category')
 
     class Meta:
@@ -14,15 +15,37 @@ class Category(models.Model):
     def __str__(self):
         return self.title
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)
+            self.slug = base_slug
+            # Ensure the slug is unique by appending '-1' repeatedly
+            counter = 1
+            while Category.objects.filter(slug=self.slug).exists():
+                counter += 1
+                self.slug = f'{base_slug}-{counter}'
+        super(Category, self).save(*args, **kwargs)
+
 
 class Group(models.Model):
     name = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True ,  blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='images/group')
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name)
+            self.slug = base_slug
+            # Ensure the slug is unique by appending '-1' repeatedly
+            counter = 1
+            while Group.objects.filter(slug=self.slug).exists():
+                counter += 1
+                self.slug = f'{base_slug}-{counter}'
+        super(Group, self).save(*args, **kwargs)
 
 
 class Key(models.Model):
@@ -41,7 +64,7 @@ class Value(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True, blank = True)
     description = models.TextField()
     price = models.FloatField()
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='groups')
@@ -50,6 +73,17 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name)
+            self.slug = base_slug
+            # Ensure the slug is unique by appending '-1' repeatedly
+            counter = 1
+            while Product.objects.filter(slug=self.slug).exists():
+                counter += 1
+                self.slug = f'{base_slug}-{counter}'
+        super(Product, self).save(*args, **kwargs)
 
 
 class Attribute(models.Model):

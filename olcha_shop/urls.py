@@ -4,7 +4,7 @@ from django.urls import path, include
 from olcha_shop.views import CategoryListView, GroupListView, ProductListView, CommentListView, \
     ImageListView, AttributeListView, CategoryDetailAPIView, ProductListAPIView, CategoryDetailAPIView, \
     ProductListAPIView, CategoryCreateView, GroupDetailAPIView, ProductDetailAPIView, AttributeDetailAPIView, \
-    UserLoginAPIView, UserRegisterAPIView, UserLogoutAPIView
+    UserLoginAPIView, UserRegisterAPIView, UserLogoutAPIView, ProductListCreateAPIView
 from olcha_shop.views import ProductListViewSet
 from rest_framework.routers import DefaultRouter
 
@@ -19,6 +19,7 @@ urlpatterns = [
     path('groups/', GroupListView.as_view(), name='group_list'),
     path('group/<slug:slug>/detail/', GroupDetailAPIView.as_view(), name='group-detail'),
     path('category/<slug:category_slug>/<slug:group_slug>/', ProductListAPIView.as_view(), name='product_list'),
+    path('products/products/', ProductListCreateAPIView.as_view() ),
     path('product/view/<slug:slug>/', ProductDetailAPIView.as_view() ),
     path('comments/', CommentListView.as_view(), name='comment_list'),
     path('images/', ImageListView.as_view(), name='image_list'),

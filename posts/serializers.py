@@ -1,4 +1,7 @@
-from olcha_shop import serializers
+from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer
+
+
 from posts.models import Post
 
 
